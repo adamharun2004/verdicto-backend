@@ -67,3 +67,31 @@ def predict_case(input_data: CaseInput):
 
     result = "Conviction" if prediction == 1 else "Bail"
     return {"prediction": result}
+    from fastapi import FastAPI
+from pydantic import BaseModel
+import joblib
+import pandas as pd
+
+app = FastAPI()
+
+# ---- Input schema ----
+class CaseInput(BaseModel):
+    age: int
+    crime_severity: int
+    past_offenses: int
+
+# ---- Load pre-trained model ----
+model = joblib.load("model.pkl")
+
+# ---- Routes ----
+@app.get("/")
+def read_root():
+    return {"message": "Verdicto Backend Running"}
+
+@app.post("/predict")
+def predict_case(input_data: CaseInput):
+    input_df = pd.DataFrame([input_data.dict()])
+    prediction = model.predict(input_df)[0]
+
+    result = "Conviction" if prediction == 1 else "Bail"
+    return {"prediction": result}
